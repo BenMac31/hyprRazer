@@ -5,7 +5,7 @@ from openrazer.client import DaemonNotFound, DeviceManager, constants as razer_c
 from i3razer import config_contants as conf
 from i3razer.config_parser import ConfigParser
 from i3razer.layout import layouts
-from i3razer.pyxhook import HookManager
+import csv
 
 ERR_DAEMON_OFF = -2  # openrazer is not running
 ERR_NO_KEYBOARD = -3  # no razer keyboard found
@@ -45,9 +45,51 @@ class I3Razer:
         self._logger = logger
         self._logger.info("Loading config")
         self._load_config(config_file)
+        self._key_color_mapping = {}
         self._logger.info("Loading Razer Keyboard")
         self._load_keyboard(layout)
         self._logger.info("Loading done")
+
+    def _draw_static_scheme_from_csv(self):
+        """
+        Draw static color scheme from the loaded CSV data
+        """
+        self._keyboard.fx.advanced.matrix.reset()
+        for key_code, hex_value in self._key_color_mapping.items():
+            # if field == conf.all_keys:
+            #     keys = self._key_layout.keys()
+            # else:
+            #     # field is a key array
+            #     keys = self._config.get_keys(field)
+            # if keys:
+            #     color = self._config.get_color(color_config[field])
+            #     self._set_color(color, keys)
+            try:
+                # Convert the key code to an integer
+                # key = self._key_layout.get(key_code)
+                # Apply hex_value to the key represented by key_code
+                hex_pairs = [hex_value[i:i+2] for i in range(0, len(hex_value), 2)]
+                color = [int(pair, 16) for pair in hex_pairs]
+                print(f"Applying color {hex_value} to key {key_code}")  # Debug print statement
+                self._keyboard.fx.advanced.matrix[self._key_layout.get(key_code)] = color
+            except ValueError:
+                self._logger.warning(f"Invalid key code format: '{key_code}'")
+        self._keyboard.fx.advanced.draw()
+
+    def _load_layout_from_csv(self, csv_file):
+        with open(csv_file, "r") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) >= 2:
+                    key_code = row[0]
+                    hex_value = row[1]
+                    # Store the key code and hex value mapping
+                    self._key_color_mapping[key_code] = hex_value
+                else:
+                    self._logger.warning("Invalid row in CSV file")
+
+        # Apply the loaded layout
+        self._draw_static_scheme_from_csv()
 
     def _update_color_scheme(self):
         """
@@ -256,36 +298,6 @@ class I3Razer:
             self._logger.critical("No Razer Keyboard found")
             exit(ERR_NO_KEYBOARD)
 
-    def _setup_key_hook(self):
-        """
-        Setup pyxhook to recognize key presses
-        """
-
-        def on_key_pressed(event):
-            # Key pressed, update scheme if needed
-            key = event.Key.lower()  # config is in lower case
-            if key not in self._current_pressed_keys:
-                self._current_pressed_keys.add(key)
-                if key in self._listen_to_keys:
-                    self._update_color_scheme()
-
-        def on_key_released(event):
-            key = event.Key.lower()
-            if key in self._current_pressed_keys:
-                self._current_pressed_keys.remove(key)
-            else:
-                self._logger.warning(
-                    f"releasing key {key} not in pressed keys {self._current_pressed_keys}, resetting pressed keys")
-                self._current_pressed_keys = set()
-            if key in self._listen_to_keys:
-                self._update_color_scheme()
-
-        # init hook manager
-        hook = HookManager()
-        hook.KeyDown = on_key_pressed
-        hook.KeyUp = on_key_released
-        self._hook = hook
-
     def _load_config(self, config_file):
         """
         Load config on startup
@@ -306,8 +318,8 @@ class I3Razer:
         """
         if not self._running:
             self._logger.warning("Starting Hook")
-            self._setup_key_hook()
-            self._hook.start()
+            # self._setup_key_hook()
+            # self._hook.start()
             self._running = True
             self._update_color_scheme()
 
@@ -413,6 +425,7 @@ class I3Razer:
         Works also if the thread is not started yet, then the scheme does not change on a keypress
         return: false if the color scheme cannot be found
         """
+        print("alksfdj")
         color_config = self._config.get_color_scheme_by_name(color_scheme_name)
         if not color_config:
             return False
