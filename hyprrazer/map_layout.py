@@ -1,7 +1,7 @@
 from pprint import pprint
 
-from i3razer.layout import layouts
-from i3razer.pyxhook import HookManager
+from hyprrazer.layout import layouts
+from hyprrazer.pyxhook import HookManager
 from openrazer.client import DeviceManager
 
 
@@ -136,7 +136,7 @@ class MapLayout:
             pprint(self.all_layouts, f, sort_dicts=False)
         print("All keyboards are done")
         print("Layouts have been updated in 'layout.py'. Move the file to the package install position "
-              "(e.g. {~/.local|/usr}/lib/python3.x/site-packages/i3razer)"
+              "(e.g. {~/.local|/usr}/lib/python3.x/site-packages/hyprrazer)"
               "and consider opening a pull request on github")
         exit()
 

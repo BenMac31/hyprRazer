@@ -1,6 +1,6 @@
 import setuptools
 
-from i3razer import __version__
+from hyprrazer import __version__
 
 
 def read_me():
@@ -9,14 +9,14 @@ def read_me():
 
 
 setuptools.setup(
-    name="i3razer",
+    name="hyprrazer",
     version=__version__,
-    author="Leo Fahrbach",
+    author="Benjamin McIntyre",
     author_email="",
     description="Shortcut/Command visualization on razer keyboards via openrazer",
     long_description=read_me(),
     long_description_content_type="text/markdown",
-    url="https://github.com/leofah/i3razer",
+    url="https://github.com/benmac6/hyprRazer",
     packages=setuptools.find_packages(),
     include_package_data=True,
     license="MIT",
@@ -37,7 +37,7 @@ setuptools.setup(
     python_requires=">=3",
     entry_points={
         "console_scripts": [
-            "i3razer=i3razer:main",
+            "hyprrazer=hyprrazer:main",
         ],
     },
 )
