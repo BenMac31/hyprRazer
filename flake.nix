@@ -5,11 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }: {
-
-    packages = withPkgsFor (system: pkgs: {
-        hyprRazer = pkgs.callPackage ./default.nix {
-        };
-        })
+  outputs = { self, nixpkgs }:
+  let
+  inherit (nixpkgs) lib;
+  in
+  {
+    packages."<sytem>".hyprrazer = nixpkgs.callPackage ./default.nix;
   };
 }
